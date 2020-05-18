@@ -13,5 +13,10 @@ print("File System Size {:,} - Free Space {:,}".format(fs_size, fs_free))
 
 uos.listdir('sensor_log')
 
+
+#for i in uos.listdir('sensor_log'):
+#uos.remove('sensor_log/{file}'.format(file=i))
+
+
 # get log file
 ampy get sensor_log/log_2020-05-03_21-40-50.csv sensor_log/log_2020-05-03_21-40-50.csv

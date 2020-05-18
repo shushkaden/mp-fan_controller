@@ -3,18 +3,23 @@ from machine import SDCard, Pin, I2C, Timer
 
 from ds3231 import DS3231
 from tempsensor import Tempsensor
+from thermocouple import Thermocouple
 from utils import leading_zero
 
 time_module = DS3231(I2C(sda=Pin(21), scl=Pin(22)))
 now = time_module.DateTime()
 tempsensor = Tempsensor(pin=32)
+thermocouple = Thermocouple()
 
-uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
+# uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
+#
+# if 'sensor_log' not in uos.listdir('/sd'):
+#     uos.mkdir('/sd/sensor_log')
 
-if 'sensor_log' not in uos.listdir('/sd'):
-    uos.mkdir('/sd/sensor_log')
+if 'sensor_log' not in uos.listdir(''):
+    uos.mkdir('/sensor_log')
 
-filename = '/sd/sensor_log/log_{year}-{month}-{day}_{hour}-{minute}-{second}.csv'.format(
+filename = '/sensor_log/log_{year}-{month}-{day}_{hour}-{minute}-{second}.csv'.format(
     year=now[0],
     month=leading_zero(now[1]),
     day=leading_zero(now[2]),
@@ -23,38 +28,45 @@ filename = '/sd/sensor_log/log_{year}-{month}-{day}_{hour}-{minute}-{second}.csv
     second=leading_zero(now[6]))
 
 with open(filename, 'w') as file:
-    file.write('time, voltage\n')
+    file.write('time; thermocouple_temp; raw_temp; temp; raw_delta; delta\n')
 
 main_timer = Timer(-1)
-
 counter = 0
+
 
 def tick(timer):
     global counter
     counter += 1
 
-    if counter == 100:
+    if counter == 20:
         log_sensors_data()
         counter = 0
 
-    tempsensor.read()
+    tempsensor.tick()
+    thermocouple.read()
+
+def tostr(val):
+    return str(val).replace('.', ',')
 
 
 def log_sensors_data():
-    voltage = tempsensor.get_value()
+    temperature = tempsensor.get_temperature()
+    thermocouple_temp = thermocouple.get_value()
     now = time_module.DateTime()
     nowstr = '{hour}:{minute}:{second}'.format(
         hour=leading_zero(now[4]),
         minute=leading_zero(now[5]),
         second=leading_zero(now[6]))
 
-    # print('{time}, {voltage}'.format(time=nowstr, voltage=voltage))
+    print('{time}; {thermocouple_temp}; {raw_temp}; {temp}; {raw_delta}; {delta}'.format(time=nowstr, thermocouple_temp=tostr(thermocouple_temp), raw_temp=tostr(temperature['raw_temp']), temp=tostr(temperature['temp']), raw_delta=tostr(temperature['raw_delta']), delta=tostr(temperature['delta'])))
 
     with open(filename, 'a') as file:
-        file.write('{time}, {voltage}\n'.format(time=nowstr, voltage=voltage))
+        file.write('{time}; {thermocouple_temp}; {raw_temp}; {temp}; {raw_delta}; {delta}\n'.format(time=nowstr, thermocouple_temp=tostr(thermocouple_temp), raw_temp=tostr(temperature['raw_temp']), temp=tostr(temperature['temp']), raw_delta=tostr(temperature['raw_delta']), delta=tostr(temperature['delta'])))
+
 
 def main():
     main_timer.init(period=50, mode=Timer.PERIODIC, callback=tick)
+
 
 if __name__ == '__main__':
     main()
