@@ -120,28 +120,25 @@ class Tempsensor:
         return sign * pow(abs(delta), 0.7) * 3.1
 
     def get_temperature(self):
-        temperature = self.smooth_temp.get_smooth(self._read_temperature())
-        raw = temperature
+        raw_temperature = self.smooth_temp.get_smooth(self._read_temperature())
         if len(self.values) < self.range:
-            self._save(temperature)
-            # return temperature
-            dd = {
-                'raw_temp': 1,
-                'temp': 1,
-                'raw_delta': 1,
-                'delta': 1,
+            self._save(raw_temperature)
+
+            return {
+                'raw_temperature': raw_temperature,
+                'temperature': raw_temperature,
+                'raw_delta': 0,
+                'delta': 0,
             }
 
-        raw_delta = temperature - self.values[0]
-        delta = self.smooth_delta.get_smooth(temperature - self.values[0])
-        self._save(temperature)
-        temperature = self.smooth_temp_result.get_smooth(temperature + self._get_increment_by_delta(delta))
+        raw_delta = raw_temperature - self.values[0]
+        delta = self.smooth_delta.get_smooth(raw_delta)
+        self._save(raw_temperature)
+        temperature = self.smooth_temp_result.get_smooth(raw_temperature + self._get_increment_by_delta(delta))
 
-        dd = {
-            'raw_temp': raw,
-            'temp': temperature,
+        return {
+            'raw_temperature': raw_temperature,
+            'temperature': temperature,
             'raw_delta': raw_delta,
             'delta': delta,
         }
-
-        return dd

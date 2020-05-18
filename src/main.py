@@ -45,7 +45,8 @@ def tick(timer):
     tempsensor.tick()
     thermocouple.read()
 
-def tostr(val):
+
+def to_log_value(val):
     return str(val).replace('.', ',')
 
 
@@ -58,10 +59,20 @@ def log_sensors_data():
         minute=leading_zero(now[5]),
         second=leading_zero(now[6]))
 
-    print('{time}; {thermocouple_temp}; {raw_temp}; {temp}; {raw_delta}; {delta}'.format(time=nowstr, thermocouple_temp=tostr(thermocouple_temp), raw_temp=tostr(temperature['raw_temp']), temp=tostr(temperature['temp']), raw_delta=tostr(temperature['raw_delta']), delta=tostr(temperature['delta'])))
+    data_str = '{time}; {thermocouple_temp}; {raw_temperature}; {temperature}; {raw_delta}; {delta}'.format(
+        time=nowstr,
+        thermocouple_temp=to_log_value(thermocouple_temp),
+        raw_temperature=to_log_value(temperature['raw_temperature']),
+        temperature=to_log_value(temperature['temperature']),
+        raw_delta=to_log_value(temperature['raw_delta']),
+        delta=to_log_value(temperature['delta'])
+    )
+
+    print(data_str)
 
     with open(filename, 'a') as file:
-        file.write('{time}; {thermocouple_temp}; {raw_temp}; {temp}; {raw_delta}; {delta}\n'.format(time=nowstr, thermocouple_temp=tostr(thermocouple_temp), raw_temp=tostr(temperature['raw_temp']), temp=tostr(temperature['temp']), raw_delta=tostr(temperature['raw_delta']), delta=tostr(temperature['delta'])))
+        file.write(data_str)
+        file.write('\n')
 
 
 def main():
