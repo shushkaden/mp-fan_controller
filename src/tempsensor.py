@@ -1,5 +1,7 @@
 from machine import Pin, ADC
 
+from smooth import SmoothValue
+
 
 class ADCReader:
     values = []
@@ -38,42 +40,12 @@ class ADCReader:
         return int(value)
 
 
-class SmoothValue:
-    value = None
-    min_value = None
-    max_value = None
-    divider = None
-
-    def __init__(self, min_value, max_value, divider):
-        self.min_value = min_value
-        self.max_value = max_value
-        self.divider = divider
-
-    def get_smooth(self, value):
-        if not self.value:
-            self.value = value
-            return value
-
-        diff = value - self.value
-
-        smoother = abs(diff)
-        smoother /= self.divider
-        smoother = max(smoother, self.min_value)
-        smoother = min(smoother, self.max_value)
-
-        diff *= smoother
-
-        self.value = self.value + diff
-
-        return self.value
-
-
 class Tempsensor:
     adc_reader = None
     values = []
-    range = 6
-    smooth_temp = SmoothValue(0.05, 1, 2)
-    smooth_temp_result = SmoothValue(0.05, 1, 2)
+    range = 6  # seconds +1
+    smooth_raw_temperature = SmoothValue(0.05, 1, 2)
+    smooth_temperature = SmoothValue(0.05, 1, 2)
     smooth_delta = SmoothValue(0.1, 1, 1)
     # parameters for formula
     # y = ax ^ 3 + bx ^ 2 + cx + d
@@ -85,6 +57,11 @@ class Tempsensor:
         {'value': 748, 'a': 0.000000004, 'b': -0.0000172055, 'c': 0.05823517, 'd': 21.4181976964},
         {'value': 0, 'a': 0.0000000706, 'b': -0.0001253021, 'c': 0.1171149112, 'd': 9.9836620549},
     ]
+
+    current_raw_temperature = 0
+    current_temperature = 0
+    current_raw_delta = 0
+    current_delta = 0
 
     def __init__(self, pin=32):
         self.adc_reader = ADCReader(pin=pin)
@@ -120,25 +97,23 @@ class Tempsensor:
         return sign * pow(abs(delta), 0.7) * 3.1
 
     def get_temperature(self):
-        raw_temperature = self.smooth_temp.get_smooth(self._read_temperature())
+        raw_temperature = self.smooth_raw_temperature.get_smooth(self._read_temperature())
         if len(self.values) < self.range:
             self._save(raw_temperature)
 
-            return {
-                'raw_temperature': raw_temperature,
-                'temperature': raw_temperature,
-                'raw_delta': 0,
-                'delta': 0,
-            }
+            self.current_raw_temperature = raw_temperature
+            self.current_temperature = raw_temperature
+
+            return self.current_temperature
 
         raw_delta = raw_temperature - self.values[0]
         delta = self.smooth_delta.get_smooth(raw_delta)
         self._save(raw_temperature)
-        temperature = self.smooth_temp_result.get_smooth(raw_temperature + self._get_increment_by_delta(delta))
+        temperature = self.smooth_temperature.get_smooth(raw_temperature + self._get_increment_by_delta(delta))
 
-        return {
-            'raw_temperature': raw_temperature,
-            'temperature': temperature,
-            'raw_delta': raw_delta,
-            'delta': delta,
-        }
+        self.current_raw_temperature = raw_temperature
+        self.current_temperature = temperature
+        self.current_raw_delta = raw_delta
+        self.current_delta = delta
+
+        return self.current_temperature

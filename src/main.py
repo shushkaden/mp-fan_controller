@@ -2,6 +2,8 @@ import uos
 from machine import SDCard, Pin, I2C, Timer
 
 from ds3231 import DS3231
+from pwmfan import PWMFan
+from pid import PIDFanTempController
 from tempsensor import Tempsensor
 from thermocouple import Thermocouple
 from utils import leading_zero
@@ -10,6 +12,8 @@ time_module = DS3231(I2C(sda=Pin(21), scl=Pin(22)))
 now = time_module.DateTime()
 tempsensor = Tempsensor(pin=32)
 thermocouple = Thermocouple()
+fan = PWMFan()
+fan_controller = PIDFanTempController(fan, tempsensor)
 
 # uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
 #
@@ -40,6 +44,7 @@ def tick(timer):
 
     if counter == 20:
         log_sensors_data()
+        fan_controller.update_fan_speed()
         counter = 0
 
     tempsensor.tick()
@@ -51,7 +56,7 @@ def to_log_value(val):
 
 
 def log_sensors_data():
-    temperature = tempsensor.get_temperature()
+    tempsensor.get_temperature()
     thermocouple_temp = thermocouple.get_value()
     now = time_module.DateTime()
     nowstr = '{hour}:{minute}:{second}'.format(
@@ -62,10 +67,10 @@ def log_sensors_data():
     data_str = '{time}; {thermocouple_temp}; {raw_temperature}; {temperature}; {raw_delta}; {delta}'.format(
         time=nowstr,
         thermocouple_temp=to_log_value(thermocouple_temp),
-        raw_temperature=to_log_value(temperature['raw_temperature']),
-        temperature=to_log_value(temperature['temperature']),
-        raw_delta=to_log_value(temperature['raw_delta']),
-        delta=to_log_value(temperature['delta'])
+        raw_temperature=to_log_value(tempsensor.current_raw_temperature),
+        temperature=to_log_value(tempsensor.current_temperature),
+        raw_delta=to_log_value(tempsensor.current_raw_delta),
+        delta=to_log_value(tempsensor.current_delta)
     )
 
     print(data_str)
