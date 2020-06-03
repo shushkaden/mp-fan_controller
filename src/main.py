@@ -49,6 +49,7 @@ def tick(timer):
 
     tempsensor.tick()
     thermocouple.read()
+    fan.tick(50)
 
 
 def to_log_value(val):
@@ -64,13 +65,18 @@ def log_sensors_data():
         minute=leading_zero(now[5]),
         second=leading_zero(now[6]))
 
-    data_str = '{time}; {thermocouple_temp}; {raw_temperature}; {temperature}; {raw_delta}; {delta}'.format(
+    data_str = '{time}; {thermocouple_temp}; {raw_temperature}; {temperature}; {raw_delta}; {delta}; {fan_speed}; {pid_speed}; {p_part}; {i_part}; {d_part}'.format(
         time=nowstr,
         thermocouple_temp=to_log_value(thermocouple_temp),
         raw_temperature=to_log_value(tempsensor.current_raw_temperature),
         temperature=to_log_value(tempsensor.current_temperature),
         raw_delta=to_log_value(tempsensor.current_raw_delta),
-        delta=to_log_value(tempsensor.current_delta)
+        delta=to_log_value(tempsensor.current_delta),
+        fan_speed=to_log_value(fan.current_speed),
+        pid_speed=to_log_value(fan_controller.speed),
+        p_part=to_log_value(fan_controller.proportional_part),
+        i_part=to_log_value(fan_controller.integral_part),
+        d_part=to_log_value(fan_controller.derivative_part)
     )
 
     print(data_str)
