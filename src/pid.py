@@ -10,10 +10,11 @@ class PIDFanTempController:
     proportional_part = 0
     integral_part = 0
     derivative_part = 0
-    target_temperature = 40
-    proportional_ratio = 8  # percents/degree
-    integral_ratio = 0.5  # percents/(degree*second)
-    derivative_ratio = 100  # percents/(degree/second)
+    target_temperature = 70
+    predicted_speed = 10
+    proportional_ratio = 15  # percents/degree
+    integral_ratio = 0.2  # percents/(degree*second)
+    derivative_ratio = 30  # percents/(degree/second)
     derivative_part_delay = 5  # delay in seconds for derivative part
     integral_part_active = False
     speed = 0
@@ -50,11 +51,11 @@ class PIDFanTempController:
         current_delta = self.smooth_delta.get_smooth(self.temp_values[-1]['temperature'] - self.target_temperature)
 
         # proportional part
-        self.proportional_part = self.proportional_ratio * current_delta
+        self.proportional_part = self.proportional_ratio * current_delta + self.predicted_speed
 
         # integral part
         if self.integral_part_active and len(self.temp_values) >= 2:
-            self.integral_part += current_delta * (self.temp_values[-1]['time'] - self.temp_values[-2]['time'])
+            self.integral_part += self.integral_ratio * (current_delta * (self.temp_values[-1]['time'] - self.temp_values[-2]['time']))
             self.integral_part = min(self.integral_part, self.max_integration_part)
             self.integral_part = max(self.integral_part, self.min_integration_part)
 

@@ -1,18 +1,23 @@
 import uos
 from machine import SDCard, Pin, I2C, Timer
 
+from button import Button
 from ds3231 import DS3231
 from pwmfan import PWMFan
 from pid import PIDFanTempController
 from tempsensor import Tempsensor
+from tempsensor_mock import TempsensorMock
 from thermocouple import Thermocouple
 from utils import leading_zero
 
 time_module = DS3231(I2C(sda=Pin(21), scl=Pin(22)))
 now = time_module.DateTime()
-tempsensor = Tempsensor(pin=32)
+# tempsensor = Tempsensor(pin=32)
 thermocouple = Thermocouple()
 fan = PWMFan()
+tempsensor = TempsensorMock(fan)
+Button(36, tempsensor.warm_up)
+Button(14, tempsensor.cool_down)
 fan_controller = PIDFanTempController(fan, tempsensor)
 
 # uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
