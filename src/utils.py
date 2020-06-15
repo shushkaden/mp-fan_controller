@@ -4,5 +4,6 @@ def zfill(s, width):
     else:
         return s
 
+
 def leading_zero(number):
     return zfill(str(number), 2)
