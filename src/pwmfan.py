@@ -48,9 +48,15 @@ class PWMFan:
         if not self._can_change_speed:
             return
 
-        if not self.is_running and speed >= self.turn_on_speed:
-            self._start()
-            return
+        if not self.is_running:
+            if speed >= self.starting_speed:
+                self.is_running = True
+                self._set_speed(speed)
+                return
+
+            if speed >= self.turn_on_speed:
+                self._start()
+                return
 
         if self.is_running:
             if speed < self.turn_off_speed:
