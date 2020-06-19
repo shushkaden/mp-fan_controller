@@ -54,14 +54,16 @@ class Tempsensor:
     # VALUES WORKS ONLY FOR 266 OHMS RESISTOR IN VOLTAGE DEVIDER!
     # AND TEMPERATURE SENSOR FAE 33060
     adc_temperature_dependancy = [
-        {'value': 748, 'a': 0.000000004, 'b': -0.0000172055, 'c': 0.05823517, 'd': 21.4181976964},
-        {'value': 0, 'a': 0.0000000706, 'b': -0.0001253021, 'c': 0.1171149112, 'd': 9.9836620549},
+        {'value': 765, 'a': 0.0000000041, 'b': -0.0000169431, 'c': 0.05483747, 'd': 23.3167608512},
+        {'value': 0, 'a': 0.0000000682, 'b': -0.0001242755, 'c': 0.1168440757, 'd': 9.9987971976},
     ]
 
+    current_adc_temperature = 0
     current_raw_temperature = 0
     current_temperature = 0
     current_raw_delta = 0
     current_delta = 0
+    adc_value = 0
 
     def __init__(self, pin=32):
         self.adc_reader = ADCReader(pin=pin)
@@ -79,8 +81,8 @@ class Tempsensor:
         return temperature
 
     def _read_temperature(self):
-        adc_value = self.adc_reader.get_value()
-        temperature = self._calculate_temperature(adc_value)
+        self.adc_value = self.adc_reader.get_value()
+        temperature = self._calculate_temperature(self.adc_value)
 
         return temperature
 
@@ -97,7 +99,8 @@ class Tempsensor:
         return sign * pow(abs(delta), 0.7) * 3.1
 
     def get_temperature(self):
-        raw_temperature = self.smooth_raw_temperature.get_smooth(self._read_temperature())
+        self.current_adc_temperature = self._read_temperature()
+        raw_temperature = self.smooth_raw_temperature.get_smooth(self.current_adc_temperature)
         if len(self.values) < self.range:
             self._save(raw_temperature)
 
