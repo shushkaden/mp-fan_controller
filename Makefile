@@ -1,7 +1,7 @@
 TTY=/dev/cu.SLAB_USBtoUART
 FIRMWARE=/Users/d_shushkevich/micropython/esp32/esp32-idf4-20191220-v1.12.bin
 SRCDIR = src
-SRCFILES = $(shell ls ${SRCDIR})
+SRCFILES = $(shell find ${SRCDIR} -type f | cut -d'/' -f2- | sort)
 
 ls: killscreen
 	ampy ls -r
