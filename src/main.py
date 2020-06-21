@@ -12,12 +12,12 @@ from utils import leading_zero
 
 time_module = DS3231(I2C(sda=Pin(21), scl=Pin(22)))
 now = time_module.DateTime()
-# tempsensor = Tempsensor(pin=32)
+tempsensor = Tempsensor(pin=32)
 thermocouple = Thermocouple()
 fan = PWMFan()
-tempsensor = TempsensorMock(fan)
-Button(36, tempsensor.warm_up)
-Button(14, tempsensor.cool_down)
+# tempsensor = TempsensorMock(fan)
+# Button(36, tempsensor.warm_up)
+# Button(14, tempsensor.cool_down)
 fan_controller = PIDFanTempController(fan, tempsensor)
 
 # uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
@@ -70,21 +70,19 @@ def log_sensors_data():
         minute=leading_zero(now[5]),
         second=leading_zero(now[6]))
 
-    data_str = '{time}; {thermocouple_temp}; {raw_temperature}; {temperature}; {raw_delta}; {delta}; {fan_speed}; {pid_speed}; {p_part}; {i_part}; {d_part}'.format(
+    # data_str = '{time}; {thermocouple_temp}; {raw_temperature}; {temperature}; {raw_delta}; {delta}; {fan_speed}; {pid_speed}; {p_part}; {i_part}; {d_part}'.format(
+    data_str = '{time}; {adc_value}; {thermocouple_temp}; {adc_temperature}; {raw_temperature}; {temperature}; {raw_delta}; {delta}'.format(
         time=nowstr,
+        adc_value=to_log_value(tempsensor.adc_value),
         thermocouple_temp=to_log_value(thermocouple_temp),
+        adc_temperature=to_log_value(tempsensor.current_adc_temperature),
         raw_temperature=to_log_value(tempsensor.current_raw_temperature),
         temperature=to_log_value(tempsensor.current_temperature),
         raw_delta=to_log_value(tempsensor.current_raw_delta),
-        delta=to_log_value(tempsensor.current_delta),
-        fan_speed=to_log_value(fan.current_speed),
-        pid_speed=to_log_value(fan_controller.speed),
-        p_part=to_log_value(fan_controller.proportional_part),
-        i_part=to_log_value(fan_controller.integral_part),
-        d_part=to_log_value(fan_controller.derivative_part)
+        delta=to_log_value(tempsensor.current_delta)
     )
 
-    print(data_str)
+    # print(data_str)
 
     with open(filename, 'a') as file:
         file.write(data_str)
