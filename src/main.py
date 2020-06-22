@@ -1,8 +1,9 @@
 import uos
-from machine import SDCard, Pin, I2C, Timer
+from machine import SDCard, Pin, I2C, Timer, reset, RTC
 
 from button import Button
 from ds3231 import DS3231
+from logging import basicConfig, getLogger
 from pwmfan import PWMFan
 from pid import PIDFanTempController
 from tempsensor import Tempsensor
@@ -12,6 +13,7 @@ from utils import leading_zero
 
 time_module = DS3231(I2C(sda=Pin(21), scl=Pin(22)))
 now = time_module.DateTime()
+RTC().datetime(tuple(now + [0]))
 tempsensor = Tempsensor(pin=32)
 thermocouple = Thermocouple()
 fan = PWMFan()
@@ -24,6 +26,9 @@ fan_controller = PIDFanTempController(fan, tempsensor)
 #
 # if 'sensor_log' not in uos.listdir('/sd'):
 #     uos.mkdir('/sd/sensor_log')
+
+basicConfig(filename='/logs/log.log', format="{asctime} {message}", style="{")
+logger = getLogger()
 
 if 'sensor_log' not in uos.listdir(''):
     uos.mkdir('/sensor_log')
@@ -43,6 +48,18 @@ main_timer = Timer(-1)
 counter = 0
 
 
+def log_and_restart(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logger.exc(e, 'ERROR OCCURRED')
+            logger.info('RESTARTING...')
+            reset()
+    return wrapper
+
+
+@log_and_restart
 def tick(timer):
     global counter
     counter += 1
