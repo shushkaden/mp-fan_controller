@@ -1,12 +1,17 @@
 TTY=/dev/cu.SLAB_USBtoUART
 FIRMWARE=/Users/d_shushkevich/micropython/esp32/esp32-idf4-20191220-v1.12.bin
 SRCDIR = src
+SRCDIRS = $(shell find ${SRCDIR} ! -path ${SRCDIR} -type d | cut -d'/' -f2- | sort)
 SRCFILES = $(shell find ${SRCDIR} -type f | cut -d'/' -f2- | sort)
 
 ls: killscreen
 	ampy ls -r
 
 upload: killscreen
+	for dir in ${SRCDIRS} ; do \
+		echo "mkdir " $${dir}; \
+		ampy mkdir $${dir} --exists-okay; \
+	done
 	for file in ${SRCFILES} ; do \
 		echo "Uploading " $${file}; \
 		ampy put ${SRCDIR}/$${file} $${file}; \
@@ -27,6 +32,7 @@ erase: killscreen
 	esptool.py --port $(TTY) erase_flash
 
 write_flash: killscreen
+	esptool.py --port $(TTY) erase_flash
 	esptool.py --chip esp32 --port $(TTY) --baud 460800 write_flash -z 0x1000 $(FIRMWARE)
 
 # use this to connect to the serial port
