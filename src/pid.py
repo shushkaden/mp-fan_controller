@@ -10,7 +10,7 @@ class PIDFanTempController:
     proportional_part = 0
     integral_part = 0
     derivative_part = 0
-    target_temperature = 70
+    target_temperature = None
     predicted_speed = 10
     proportional_ratio = 15  # percents/degree
     integral_ratio = 0.2  # percents/(degree*second)
@@ -26,9 +26,10 @@ class PIDFanTempController:
 
     temp_values = []
 
-    def __init__(self, pwm_fan, temp_sensor):
+    def __init__(self, pwm_fan, temp_sensor, target):
         self.pwm_fan = pwm_fan
         self.temp_sensor = temp_sensor
+        self.target_temperature = target
 
     def update_fan_speed(self):
         self.update_temp_data()
@@ -72,3 +73,29 @@ class PIDFanTempController:
         fan_speed = min(fan_speed, 100)
 
         return fan_speed
+
+
+class PWMFanMock:
+    def set_speed(self, speed):
+        return
+
+
+class PIDFan2TempController:
+    pid1 = None
+    pid2 = None
+    pwm_fan = None
+    speed = 0
+    active_sensor = 1
+
+    def __init__(self, pwm_fan, temp_sensor1, temp_sensor2, target1, target2):
+        self.pid1 = PIDFanTempController(PWMFanMock(), temp_sensor1, target1)
+        self.pid2 = PIDFanTempController(PWMFanMock(), temp_sensor2, target2)
+        self.pwm_fan = pwm_fan
+
+    def update_fan_speed(self):
+        self.pid1.update_temp_data()
+        self.pid2.update_temp_data()
+        self.active_sensor = 1 if self.pid1.speed >= self.pid2.speed else 2
+        self.speed = max(self.pid1.speed, self.pid2.speed)
+        fan_speed = round(self.speed * 1023 / 100)
+        self.pwm_fan.set_speed(fan_speed)

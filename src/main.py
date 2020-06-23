@@ -20,7 +20,7 @@ fan = PWMFan()
 # tempsensor = TempsensorMock(fan)
 # Button(36, tempsensor.warm_up)
 # Button(14, tempsensor.cool_down)
-fan_controller = PIDFanTempController(fan, tempsensor)
+fan_controller = PIDFanTempController(fan, tempsensor, 70)
 
 # uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
 #
