@@ -7,3 +7,7 @@ def zfill(s, width):
 
 def leading_zero(number):
     return zfill(str(number), 2)
+
+
+def to_log_value(val):
+    return str(val).replace('.', ',')

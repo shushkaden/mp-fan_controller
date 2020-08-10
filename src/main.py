@@ -1,96 +1,90 @@
 import uos
-from machine import SDCard, Pin, I2C, Timer, reset, RTC
+from machine import SDCard, Timer, reset, RTC
 
-from ds3231 import DS3231
+import settings
+
+from data_logger import CSVDataLogger
 from logging import basicConfig, getLogger
 from pwmfan import PWMFan
 from pid import PIDFanTempController
 from tempsensor import Tempsensor
-from utils import leading_zero
+from time import now
+from utils import leading_zero, to_log_value
 
-time_module = DS3231(I2C(sda=Pin(21), scl=Pin(22)))
-now = time_module.DateTime()
-RTC().datetime(tuple(now + [0]))
-tempsensor = Tempsensor(pin=32)
-fan = PWMFan()
-fan_controller = PIDFanTempController(fan, tempsensor, 70)
-
-uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
-
-if 'sensor_log' not in uos.listdir('/sd'):
-    uos.mkdir('/sd/sensor_log')
-
-basicConfig(filename='/logs/log.log', format="{asctime} {message}", style="{")
+# init logging
+basicConfig(filename=settings.LOGGING_FILE, format="{asctime} {message}", style="{")
 logger = getLogger()
+logger.info('STARTING...')
 
 
-filename = '/sd/sensor_log/log_{year}-{month}-{day}_{hour}-{minute}-{second}.csv'.format(
-    year=now[0],
-    month=leading_zero(now[1]),
-    day=leading_zero(now[2]),
-    hour=leading_zero(now[4]),
-    minute=leading_zero(now[5]),
-    second=leading_zero(now[6]))
-
-with open(filename, 'w') as file:
-    file.write('time; raw_temp; temp; raw_delta; delta\n')
-
-main_timer = Timer(-1)
-counter = 0
+def log_and_restart(e):
+    logger.exc(e, 'ERROR OCCURRED')
+    logger.info('RESTARTING...')
+    reset()
 
 
-def log_and_restart(func):
+def log_and_restart_decorator(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            logger.exc(e, 'ERROR OCCURRED')
-            logger.info('RESTARTING...')
-            reset()
+            log_and_restart(e)
     return wrapper
 
 
-@log_and_restart
+try:
+    logger.info('Initialize hardware')
+
+    # init time
+    RTC().datetime(tuple(now() + [0]))
+
+    # mount sd card
+    uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), settings.SD_CARD_PATH)
+
+    # init sensors and fan
+    tempsensor = Tempsensor(pin=32)
+    fan = PWMFan()
+    fan_controller = PIDFanTempController(fan, tempsensor, 70)
+
+    # init data logger
+    data_logger = CSVDataLogger(['time', 'temp', 'speed'])
+
+    # init timer
+    main_timer = Timer(-1)
+    counter = 0
+
+    logger.info('Initialization complete')
+except Exception as e:
+    log_and_restart(e)
+
+
+@log_and_restart_decorator
 def tick(timer):
     global counter
     counter += 1
 
     if counter == 20:
-        log_sensors_data()
+        tempsensor.get_temperature()
         fan_controller.update_fan_speed()
+        log_sensors_data()
         counter = 0
 
     tempsensor.tick()
     fan.tick(50)
 
 
-def to_log_value(val):
-    return str(val).replace('.', ',')
-
-
 def log_sensors_data():
-    tempsensor.get_temperature()
-    now = time_module.DateTime()
+    time_now = now()
     nowstr = '{hour}:{minute}:{second}'.format(
-        hour=leading_zero(now[4]),
-        minute=leading_zero(now[5]),
-        second=leading_zero(now[6]))
+        hour=leading_zero(time_now[4]),
+        minute=leading_zero(time_now[5]),
+        second=leading_zero(time_now[6]))
 
-    data_str = '{time}; {adc_value}; {adc_temperature}; {raw_temperature}; {temperature}; {raw_delta}; {delta}'.format(
-        time=nowstr,
-        adc_value=to_log_value(tempsensor.adc_value),
-        adc_temperature=to_log_value(tempsensor.current_adc_temperature),
-        raw_temperature=to_log_value(tempsensor.current_raw_temperature),
-        temperature=to_log_value(tempsensor.current_temperature),
-        raw_delta=to_log_value(tempsensor.current_raw_delta),
-        delta=to_log_value(tempsensor.current_delta)
-    )
-
-    # print(data_str)
-
-    with open(filename, 'a') as file:
-        file.write(data_str)
-        file.write('\n')
+    data_logger.log_data({
+        'time': nowstr,
+        'temp': to_log_value(tempsensor.current_temperature),
+        'speed': to_log_value(fan.current_speed),
+    })
 
 
 def main():
