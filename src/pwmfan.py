@@ -1,15 +1,17 @@
 from machine import Pin, PWM
 
+import settings
+
 
 class PWMFan:
+    min_speed = settings.FAN['min_speed']
+    turn_on_speed = settings.FAN['turn_on_speed']
+    turn_off_speed = settings.FAN['turn_off_speed']
+    starting_speed = settings.FAN['starting_speed']
+    starting_time = settings.FAN['starting_time']
+    pwm_frequency = settings.FAN['pwm_frequency']
     fan_pin = None
     current_speed = 0
-    min_speed = 10
-    turn_on_speed = 13
-    turn_off_speed = 7
-    starting_speed = 18
-    starting_time = 2500
-    pwm_frequency = 500
     is_running = False
     is_starting = False
     counter = 0

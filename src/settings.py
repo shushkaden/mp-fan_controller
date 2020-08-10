@@ -6,3 +6,12 @@ DATA_LOGGER = {
 }
 
 LOGGING_FILE = '/logs/log.log'
+
+FAN = {
+    'min_speed': 10,
+    'turn_on_speed': 13,
+    'turn_off_speed': 7,
+    'starting_speed': 18,
+    'starting_time': 1000,
+    'pwm_frequency': 100,
+}
