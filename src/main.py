@@ -1,13 +1,11 @@
 import uos
 from machine import SDCard, Pin, I2C, Timer, reset, RTC
 
-from button import Button
 from ds3231 import DS3231
 from logging import basicConfig, getLogger
 from pwmfan import PWMFan
 from pid import PIDFanTempController
 from tempsensor import Tempsensor
-from tempsensor_mock import TempsensorMock
 from thermocouple import Thermocouple
 from utils import leading_zero
 
@@ -17,23 +15,18 @@ RTC().datetime(tuple(now + [0]))
 tempsensor = Tempsensor(pin=32)
 thermocouple = Thermocouple()
 fan = PWMFan()
-# tempsensor = TempsensorMock(fan)
-# Button(36, tempsensor.warm_up)
-# Button(14, tempsensor.cool_down)
 fan_controller = PIDFanTempController(fan, tempsensor, 70)
 
-# uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
-#
-# if 'sensor_log' not in uos.listdir('/sd'):
-#     uos.mkdir('/sd/sensor_log')
+uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), "/sd")
+
+if 'sensor_log' not in uos.listdir('/sd'):
+    uos.mkdir('/sd/sensor_log')
 
 basicConfig(filename='/logs/log.log', format="{asctime} {message}", style="{")
 logger = getLogger()
 
-if 'sensor_log' not in uos.listdir(''):
-    uos.mkdir('/sensor_log')
 
-filename = '/sensor_log/log_{year}-{month}-{day}_{hour}-{minute}-{second}.csv'.format(
+filename = '/sd/sensor_log/log_{year}-{month}-{day}_{hour}-{minute}-{second}.csv'.format(
     year=now[0],
     month=leading_zero(now[1]),
     day=leading_zero(now[2]),

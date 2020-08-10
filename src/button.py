@@ -17,3 +17,15 @@ class Button:
             self.action()
 
         self.value = new_value
+
+# USAGE
+""""
+from button import Button
+
+button_pin = 36
+
+def print_message():
+    print('Message')
+
+Button(button_pin, print_message)
+"""
