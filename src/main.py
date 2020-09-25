@@ -3,6 +3,7 @@ from machine import SDCard, Timer, reset, RTC
 
 import settings
 
+from button import Toggle
 from data_logger import CSVDataLogger
 from logging import basicConfig, getLogger
 from pwmfan import PWMFan
@@ -45,6 +46,9 @@ try:
     tempsensor = Tempsensor(pin=32)
     fan = PWMFan()
     fan_controller = PIDFanTempController(fan, tempsensor, 70)
+
+    # init buttons
+    Toggle(pin=36, action=fan.full_throttle, cancel_action=fan.auto)
 
     # init data logger
     data_logger = CSVDataLogger(['time', 'temp', 'speed'])

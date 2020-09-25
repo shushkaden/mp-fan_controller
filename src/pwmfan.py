@@ -15,6 +15,7 @@ class PWMFan:
     is_running = False
     is_starting = False
     counter = 0
+    full_throttle_mode = False
 
     def __init__(self, pin=12):
         self.fan_pin = PWM(Pin(pin), self.pwm_frequency)
@@ -29,6 +30,11 @@ class PWMFan:
         self._set_speed(0)
 
     def tick(self, miliseconds):
+        if self.full_throttle_mode:
+            self.is_running = True
+            self.is_starting = False
+            self._set_speed(1023)
+
         if not self.is_starting:
             return
 
@@ -38,11 +44,19 @@ class PWMFan:
             self._set_speed(self.turn_on_speed)
             self.is_starting = False
 
+    def full_throttle(self):
+        self.full_throttle_mode = True
+
+    def auto(self):
+        self.full_throttle_mode = False
+
     @property
     def _can_change_speed(self):
-        return not self.is_starting
+        return not self.is_starting and not self.full_throttle_mode
 
     def _set_speed(self, speed):
+        speed = min(speed, 1023)
+        speed = max(speed, 0)
         self.current_speed = speed
         self.fan_pin.duty(speed)
 
