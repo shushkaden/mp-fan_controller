@@ -6,6 +6,7 @@ from smooth import SmoothValue
 class PIDFanTempController:
     pwm_fan = None
     temp_sensor = None
+    buzzer = None
 
     proportional_part = 0
     integral_part = 0
@@ -20,22 +21,31 @@ class PIDFanTempController:
     speed = 0
     max_integration_part = 105
     min_integration_part = -30
+    buzzer_alarm_temp = 5
 
     smooth_delta = SmoothValue(0.1, 1, 1)
     smooth_derivative_delta = SmoothValue(0.1, 1, 1)
 
     temp_values = []
 
-    def __init__(self, pwm_fan, temp_sensor, target):
+    def __init__(self, pwm_fan, temp_sensor, buzzer, target):
         self.pwm_fan = pwm_fan
         self.temp_sensor = temp_sensor
         self.target_temperature = target
+        self.buzzer = buzzer
+
+    def control_buzzer(self):
+        if self.temp_sensor.current_temperature > self.target_temperature + self.buzzer_alarm_temp + 0.5:
+            self.buzzer.turn_on()
+        if self.temp_sensor.current_temperature < self.target_temperature + self.buzzer_alarm_temp - 0.5:
+            self.buzzer.turn_off()
 
     def update_fan_speed(self):
         self.update_temp_data()
         self.speed = self.get_new_fan_speed()
         fan_speed = round(self.speed * 1023 / 100)
         self.pwm_fan.set_speed(fan_speed)
+        self.control_buzzer()
 
     def update_temp_data(self):
         temperature = self.temp_sensor.current_temperature

@@ -4,6 +4,7 @@ from machine import SDCard, Timer, reset, RTC
 import settings
 
 from button import Toggle
+from buzzer import Buzzer
 from data_logger import CSVDataLogger
 from logging import basicConfig, getLogger
 from pwmfan import PWMFan
@@ -11,6 +12,8 @@ from pid import PIDFanTempController
 from tempsensor import Tempsensor
 from time import now
 from utils import leading_zero, to_log_value
+
+PERIOD = 50
 
 # init logging
 basicConfig(filename=settings.LOGGING_FILE, format="{asctime} {message}", style="{")
@@ -42,10 +45,13 @@ try:
     # mount sd card
     uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), settings.SD_CARD_PATH)
 
+    # init buzzer
+    buzzer = Buzzer(10)
+
     # init sensors and fan
     tempsensor = Tempsensor(pin=32)
     fan = PWMFan()
-    fan_controller = PIDFanTempController(fan, tempsensor, 70)
+    fan_controller = PIDFanTempController(fan, tempsensor, buzzer, 70)
 
     # init buttons
     Toggle(pin=36, action=fan.full_throttle, cancel_action=fan.auto)
@@ -74,7 +80,8 @@ def tick(timer):
         counter = 0
 
     tempsensor.tick()
-    fan.tick(50)
+    fan.tick(PERIOD)
+    buzzer.tick(PERIOD)
 
 
 def log_sensors_data():
@@ -92,7 +99,7 @@ def log_sensors_data():
 
 
 def main():
-    main_timer.init(period=50, mode=Timer.PERIODIC, callback=tick)
+    main_timer.init(period=PERIOD, mode=Timer.PERIODIC, callback=tick)
 
 
 if __name__ == '__main__':
