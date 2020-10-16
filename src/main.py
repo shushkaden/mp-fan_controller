@@ -19,11 +19,17 @@ PERIOD = 50
 basicConfig(filename=settings.LOGGING_FILE, format="{asctime} {message}", style="{")
 logger = getLogger()
 logger.info('STARTING...')
+buzzer = None
 
 
 def log_and_restart(e):
     logger.exc(e, 'ERROR OCCURRED')
     logger.info('RESTARTING...')
+    if buzzer is not None:
+        try:
+            buzzer.play_error_signal()
+        except:
+            pass
     reset()
 
 
@@ -64,6 +70,7 @@ try:
     counter = 0
 
     logger.info('Initialization complete')
+    buzzer.play_turn_on_signal()
 except Exception as e:
     log_and_restart(e)
 

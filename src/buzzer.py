@@ -1,40 +1,75 @@
-from machine import Pin, PWM
+import time
+from machine import Pin
 
 
 class Buzzer:
-    buzzer = None
-    low_freq = None
-    high_freq = None
-    freq = None
+    pin = None
     active = False
     timer = 0
+    turn_on_pattern = [0.25]
+    error_pattern = [1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+    alarm_pattern = [0.8, 0.8]
+    repeat_pattern = None
+    repeat_index = 0
 
-    def __init__(self, pin=10, low_freq=250, high_freq=1000, freq=800):
-        self.buzzer = PWM(Pin(pin))
-        self.low_freq = low_freq
-        self.high_freq = high_freq
-        self.freq = freq
+    def __init__(self, pin=10):
+        self.pin = Pin(pin, Pin.OUT)
 
     def turn_on(self):
         if not self.active:
             self.active = True
-            self.buzzer.freq(self.high_freq)
-            self.buzzer.duty(1023)
-            self.timer = self.freq
+            self.pin.value(1)
 
     def turn_off(self):
         if self.active:
             self.active = False
-            self.buzzer.duty(0)
+            self.pin.value(0)
 
-    def tick(self, miliseconds):
-        if not self.active:
+    def toggle(self):
+        if self.active:
+            self.turn_off()
+        else:
+            self.turn_on()
+
+    def tick(self, milliseconds):
+        if not self.repeat_pattern:
             return
 
-        self.timer -= miliseconds
+        if self.repeat_index is None:  # start from the beginning
+            self.turn_off()
+            self.repeat_index = -1
+            self.timer = 0
+        else:
+            self.timer -= milliseconds
+
         if self.timer <= 0:
-            self.timer += self.freq
-            if self.buzzer.freq() == self.low_freq:
-                self.buzzer.freq(self.high_freq)
-            else:
-                self.buzzer.freq(self.low_freq)
+            self.repeat_index += 1
+            self.timer += self.repeat_pattern[self.repeat_index % len(self.repeat_pattern)] * 1000
+            self.toggle()
+
+    def play_pattern(self, pattern):
+        remember_pattern = self.repeat_pattern
+        self.repeat_pattern = None
+        self.turn_off()
+
+        for sound_time in pattern:
+            self.toggle()
+            time.sleep(sound_time)
+
+        self.turn_off()
+        self.repeat_index = None
+        self.repeat_pattern = remember_pattern
+
+    def play_turn_on_signal(self):
+        self.play_pattern(self.turn_on_pattern)
+
+    def play_error_signal(self):
+        self.play_pattern(self.error_pattern)
+
+    def alarm_on(self):
+        self.repeat_index = None
+        self.repeat_pattern = self.alarm_pattern
+
+    def alarm_off(self):
+        self.turn_off()
+        self.repeat_pattern = None
