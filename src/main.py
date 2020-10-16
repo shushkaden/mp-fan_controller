@@ -68,7 +68,7 @@ try:
 
     # init sensors and fan
     tempsensor = Tempsensor(pin=32)
-    fan = PWMFan(pin=12)
+    fan = PWMFan(pin=12, led_pin=13)
     fan_controller = PIDFanTempController(fan, tempsensor, buzzer, 70)
 
     # init buttons

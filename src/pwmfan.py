@@ -11,14 +11,18 @@ class PWMFan:
     starting_time = settings.FAN['starting_time']
     pwm_frequency = settings.FAN['pwm_frequency']
     fan_pin = None
+    led_pin = None
     current_speed = 0
     is_running = False
     is_starting = False
     counter = 0
     full_throttle_mode = False
 
-    def __init__(self, pin=12):
+    def __init__(self, pin=12, led_pin=None):
         self.fan_pin = PWM(Pin(pin), self.pwm_frequency)
+        if led_pin:
+            self.led_pin = Pin(led_pin, Pin.OUT)
+            self.led_pin.value(0)
 
     def _start(self):
         self.is_running = True
@@ -43,6 +47,9 @@ class PWMFan:
             self.counter = 0
             self._set_speed(self.turn_on_speed)
             self.is_starting = False
+
+        if self.led_pin:
+            self.led_pin.value(int(self.is_running))
 
     def full_throttle(self):
         self.full_throttle_mode = True
