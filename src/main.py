@@ -60,7 +60,10 @@ try:
     fan_controller = PIDFanTempController(fan, tempsensor, buzzer, 70)
 
     # init buttons
+    # full throttle
     Toggle(pin=36, action=fan.full_throttle, cancel_action=fan.auto)
+    # test
+    Toggle(pin=39, action=buzzer.test_on, cancel_action=buzzer.stop)
 
     # init data logger
     data_logger = CSVDataLogger(['time', 'temp', 'speed'])

@@ -9,6 +9,7 @@ class Buzzer:
     turn_on_pattern = [0.25]
     error_pattern = [1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
     alarm_pattern = [0.8, 0.8]
+    test_pattern = [0.15, 0.15]
     repeat_pattern = None
     repeat_index = 0
 
@@ -66,10 +67,18 @@ class Buzzer:
     def play_error_signal(self):
         self.play_pattern(self.error_pattern)
 
-    def alarm_on(self):
-        self.repeat_index = None
-        self.repeat_pattern = self.alarm_pattern
+    def pattern_on(self, pattern):
+        if self.repeat_pattern != pattern:
+            self.repeat_index = None
+            self.repeat_pattern = pattern
 
-    def alarm_off(self):
-        self.turn_off()
-        self.repeat_pattern = None
+    def alarm_on(self):
+        self.pattern_on(self.alarm_pattern)
+
+    def test_on(self):
+        self.pattern_on(self.test_pattern)
+
+    def stop(self):
+        if self.repeat_pattern:
+            self.turn_off()
+            self.repeat_pattern = None
