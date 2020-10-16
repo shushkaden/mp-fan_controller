@@ -1,5 +1,5 @@
 import uos
-from machine import SDCard, Timer, reset, RTC
+from machine import Pin, PWM, SDCard, Timer, reset, RTC
 
 import settings
 
@@ -10,8 +10,20 @@ from logging import basicConfig, getLogger
 from pwmfan import PWMFan
 from pid import PIDFanTempController
 from tempsensor import Tempsensor
-from time import now
+from time import now, sleep
 from utils import leading_zero, to_log_value
+
+
+# safe mode
+# used if there is an error
+full_throttle_pin = Pin(36, Pin.IN)
+fan_pin = None
+while full_throttle_pin.value():
+    if not fan_pin:
+        fan_pin = PWM(Pin(12), 100)
+        fan_pin.duty(1023)
+    sleep(1)
+# safe mode
 
 PERIOD = 50
 
@@ -56,7 +68,7 @@ try:
 
     # init sensors and fan
     tempsensor = Tempsensor(pin=32)
-    fan = PWMFan()
+    fan = PWMFan(pin=12)
     fan_controller = PIDFanTempController(fan, tempsensor, buzzer, 70)
 
     # init buttons
