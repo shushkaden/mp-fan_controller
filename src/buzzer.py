@@ -75,10 +75,15 @@ class Buzzer:
     def alarm_on(self):
         self.pattern_on(self.alarm_pattern)
 
+    def alarm_off(self):
+        if self.repeat_pattern == self.alarm_pattern:
+            self.turn_off()
+            self.repeat_pattern = None
+
     def test_on(self):
         self.pattern_on(self.test_pattern)
 
-    def stop(self):
-        if self.repeat_pattern:
+    def test_off(self):
+        if self.repeat_pattern == self.test_pattern:
             self.turn_off()
             self.repeat_pattern = None

@@ -1,3 +1,4 @@
+import time
 import uos
 from machine import Pin, PWM, SDCard, Timer, reset, RTC
 
@@ -10,7 +11,7 @@ from logging import basicConfig, getLogger
 from pwmfan import PWMFan
 from pid import PIDFanTempController
 from tempsensor import Tempsensor
-from time import now, sleep
+from timemodule import now
 from utils import leading_zero, to_log_value
 
 
@@ -22,7 +23,7 @@ while full_throttle_pin.value():
     if not fan_pin:
         fan_pin = PWM(Pin(12), 100)
         fan_pin.duty(1023)
-    sleep(1)
+    time.sleep(1)
 # safe mode
 
 PERIOD = 50
@@ -75,7 +76,7 @@ try:
     # full throttle
     Toggle(pin=36, action=fan.full_throttle, cancel_action=fan.auto)
     # test
-    Toggle(pin=39, action=buzzer.test_on, cancel_action=buzzer.stop)
+    Toggle(pin=39, action=buzzer.test_on, cancel_action=buzzer.test_off)
 
     # init data logger
     data_logger = CSVDataLogger(['time', 'temp', 'speed'])

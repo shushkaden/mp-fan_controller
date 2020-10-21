@@ -3,7 +3,7 @@ from machine import Pin
 
 class Button:
     pin = None
-    value = 1
+    value = 0
     action = None
 
     def __init__(self, pin, action):
@@ -13,7 +13,7 @@ class Button:
 
     def callback(self, _):
         new_value = self.pin.value()
-        if self.value == 1 and new_value == 0:
+        if self.value == 0 and new_value == 1:
             self.action()
 
         self.value = new_value
@@ -33,7 +33,7 @@ Button(button_pin, print_message)
 
 class Toggle:
     pin = None
-    value = 1
+    value = 0
     action = None
     cancel_action = None
 
@@ -45,10 +45,10 @@ class Toggle:
 
     def callback(self, _):
         new_value = self.pin.value()
-        if self.value == 1 and new_value == 0:
+        if self.value == 0 and new_value == 1:
             self.action()
 
-        if self.value == 0 and new_value == 1:
+        if self.value == 1 and new_value == 0:
             self.cancel_action()
 
         self.value = new_value

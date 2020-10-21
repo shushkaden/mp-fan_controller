@@ -38,7 +38,7 @@ class PIDFanTempController:
         if self.temp_sensor.current_temperature > self.target_temperature + self.buzzer_alarm_temp + 0.5:
             self.buzzer.alarm_on()
         if self.temp_sensor.current_temperature < self.target_temperature + self.buzzer_alarm_temp - 0.5:
-            self.buzzer.stop()
+            self.buzzer.alarm_off()
 
     def update_fan_speed(self):
         self.update_temp_data()

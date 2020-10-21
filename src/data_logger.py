@@ -1,7 +1,8 @@
+import uos
 import settings
 
 from utils import leading_zero
-from time import now
+from timemodule import now
 
 
 class CSVDataLogger:
