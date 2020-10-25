@@ -72,9 +72,9 @@ try:
 
     # init buttons
     # full throttle
-    Toggle(pin=36, action=fan.full_throttle, cancel_action=fan.auto)
+    Toggle(pin=26, action=fan.full_throttle, cancel_action=fan.auto)
     # test
-    Toggle(pin=39, action=buzzer.test_on, cancel_action=buzzer.test_off)
+    Toggle(pin=27, action=buzzer.test_on, cancel_action=buzzer.test_off)
 
     # init data logger
     data_logger = CSVDataLogger(['time', 'temp', 'speed'])
@@ -91,6 +91,10 @@ except Exception as e:
 
 @log_and_restart_decorator
 def tick(timer):
+    buzzer.tick(settings.TICK_PERIOD)
+    tempsensor.tick()
+    fan.tick(settings.TICK_PERIOD)
+
     global operational_counter
     operational_counter += 1
     
@@ -99,10 +103,6 @@ def tick(timer):
         fan_controller.update_fan_speed()
         log_sensors_data()
         operational_counter = 0
-
-    tempsensor.tick()
-    fan.tick(settings.TICK_PERIOD)
-    buzzer.tick(settings.TICK_PERIOD)
 
 
 def log_sensors_data():
