@@ -28,10 +28,10 @@ class PIDFanTempController:
 
     temp_values = []
 
-    def __init__(self, pwm_fan, temp_sensor, buzzer, target):
+    def __init__(self, pwm_fan, temp_sensor, buzzer, target_temperature):
         self.pwm_fan = pwm_fan
         self.temp_sensor = temp_sensor
-        self.target_temperature = target
+        self.target_temperature = target_temperature
         self.buzzer = buzzer
 
     def control_buzzer(self):

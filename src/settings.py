@@ -15,3 +15,11 @@ FAN = {
     'starting_time': 1000,
     'pwm_frequency': 100,
 }
+
+TICK_PERIOD = 50  # milliseconds
+OPERATIONAL_PERIOD = 1000  # milliseconds
+
+OPERATIONAL_FREQUENCY = int(OPERATIONAL_PERIOD/TICK_PERIOD)
+
+TARGET_TEMPERATURE = 70
+

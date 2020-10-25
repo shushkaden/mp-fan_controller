@@ -26,8 +26,6 @@ while full_throttle_pin.value():
     time.sleep(1)
 # safe mode
 
-PERIOD = 50
-
 # init logging
 basicConfig(filename=settings.LOGGING_FILE, format="{asctime} {message}", style="{")
 logger = getLogger()
@@ -65,12 +63,12 @@ try:
     uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), settings.SD_CARD_PATH)
 
     # init buzzer
-    buzzer = Buzzer(10)
+    buzzer = Buzzer(pin=10)
 
     # init sensors and fan
     tempsensor = Tempsensor(pin=32)
     fan = PWMFan(pin=12, led_pin=13)
-    fan_controller = PIDFanTempController(fan, tempsensor, buzzer, 70)
+    fan_controller = PIDFanTempController(fan, tempsensor, buzzer, settings.TARGET_TEMPERATURE)
 
     # init buttons
     # full throttle
@@ -83,7 +81,7 @@ try:
 
     # init timer
     main_timer = Timer(-1)
-    counter = 0
+    operational_counter = 0
 
     logger.info('Initialization complete')
     buzzer.play_turn_on_signal()
@@ -93,18 +91,18 @@ except Exception as e:
 
 @log_and_restart_decorator
 def tick(timer):
-    global counter
-    counter += 1
-
-    if counter == 20:
+    global operational_counter
+    operational_counter += 1
+    
+    if operational_counter == settings.OPERATIONAL_FREQUENCY:
         tempsensor.get_temperature()
         fan_controller.update_fan_speed()
         log_sensors_data()
-        counter = 0
+        operational_counter = 0
 
     tempsensor.tick()
-    fan.tick(PERIOD)
-    buzzer.tick(PERIOD)
+    fan.tick(settings.TICK_PERIOD)
+    buzzer.tick(settings.TICK_PERIOD)
 
 
 def log_sensors_data():
@@ -122,7 +120,7 @@ def log_sensors_data():
 
 
 def main():
-    main_timer.init(period=PERIOD, mode=Timer.PERIODIC, callback=tick)
+    main_timer.init(period=settings.TICK_PERIOD, mode=Timer.PERIODIC, callback=tick)
 
 
 if __name__ == '__main__':
