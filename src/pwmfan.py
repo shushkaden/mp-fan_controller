@@ -20,6 +20,7 @@ class PWMFan:
 
     def __init__(self, pin=12, led_pin=None):
         self.fan_pin = PWM(Pin(pin), self.pwm_frequency)
+        self._set_speed(0)
         if led_pin:
             self.led_pin = Pin(led_pin, Pin.OUT)
             self.led_pin.value(0)
@@ -34,10 +35,11 @@ class PWMFan:
         self._set_speed(0)
 
     def tick(self, miliseconds):
+        if self.led_pin:
+            self.led_pin.value(int(self.is_running))
+
         if self.full_throttle_mode:
-            self.is_running = True
-            self.is_starting = False
-            self._set_speed(1023)
+            return
 
         if not self.is_starting:
             return
@@ -48,11 +50,11 @@ class PWMFan:
             self._set_speed(self.turn_on_speed)
             self.is_starting = False
 
-        if self.led_pin:
-            self.led_pin.value(int(self.is_running))
-
     def full_throttle(self):
         self.full_throttle_mode = True
+        self.is_running = True
+        self.is_starting = False
+        self._set_speed(1023)
 
     def auto(self):
         self.full_throttle_mode = False

@@ -23,3 +23,11 @@ OPERATIONAL_FREQUENCY = int(OPERATIONAL_PERIOD/TICK_PERIOD)
 
 TARGET_TEMPERATURE = 70
 
+PINS = {
+    'fan': 12,
+    'fan_led': 13,
+    'test_toggle': 27,
+    'full_throttle_toggle': 26,
+    'tempsensor': 32,
+    'buzzer': 10,
+}

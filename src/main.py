@@ -17,11 +17,11 @@ from utils import leading_zero, to_log_value
 
 # safe mode
 # used if there is an error
-full_throttle_pin = Pin(36, Pin.IN)
+full_throttle_pin = Pin(settings.PINS['full_throttle_toggle'], Pin.IN)
 fan_pin = None
 while full_throttle_pin.value():
     if not fan_pin:
-        fan_pin = PWM(Pin(12), 100)
+        fan_pin = PWM(Pin(settings.PINS['fan']), 100)
         fan_pin.duty(1023)
     time.sleep(1)
 # safe mode
@@ -63,18 +63,18 @@ try:
     uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), settings.SD_CARD_PATH)
 
     # init buzzer
-    buzzer = Buzzer(pin=10)
+    buzzer = Buzzer(pin=settings.PINS['buzzer'])
 
     # init sensors and fan
-    tempsensor = Tempsensor(pin=32)
-    fan = PWMFan(pin=12, led_pin=13)
+    tempsensor = Tempsensor(pin=settings.PINS['tempsensor'])
+    fan = PWMFan(pin=settings.PINS['fan'], led_pin=settings.PINS['fan_led'])
     fan_controller = PIDFanTempController(fan, tempsensor, buzzer, settings.TARGET_TEMPERATURE)
 
     # init buttons
     # full throttle
-    Toggle(pin=26, action=fan.full_throttle, cancel_action=fan.auto)
+    Toggle(pin=settings.PINS['full_throttle_toggle'], action=fan.full_throttle, cancel_action=fan.auto)
     # test
-    Toggle(pin=27, action=buzzer.test_on, cancel_action=buzzer.test_off)
+    Toggle(pin=settings.PINS['test_toggle'], action=buzzer.test_on, cancel_action=buzzer.test_off)
 
     # init data logger
     data_logger = CSVDataLogger(['time', 'temp', 'speed'])

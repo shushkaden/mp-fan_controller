@@ -20,6 +20,9 @@ upload: killscreen
 uploadmain: killscreen
 	ampy put ${SRCDIR}/main.py main.py
 
+uploadsettings: killscreen
+	ampy put ${SRCDIR}/settings.py settings.py
+
 uploadweb:
 	for file in ${SRCFILES} ; do \
 		./webrepl_cli.py -p 1111 ${SRCDIR}/$${file} 192.168.4.1:/$${file}; \
