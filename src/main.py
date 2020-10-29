@@ -67,6 +67,7 @@ try:
 
     # init sensors and fan
     tempsensor = Tempsensor(pin=settings.PINS['tempsensor'])
+    tempsensor_aux = Tempsensor(pin=settings.PINS['tempsensor_aux'])
     fan = PWMFan(pin=settings.PINS['fan'], led_pin=settings.PINS['fan_led'])
     fan_controller = PIDFanTempController(fan, tempsensor, buzzer, settings.TARGET_TEMPERATURE)
 
@@ -77,7 +78,7 @@ try:
     Toggle(pin=settings.PINS['test_toggle'], action=buzzer.test_on, cancel_action=buzzer.test_off)
 
     # init data logger
-    data_logger = CSVDataLogger(['time', 'temp', 'speed'])
+    data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed'])
 
     # init timer
     main_timer = Timer(-1)
@@ -93,6 +94,7 @@ except Exception as e:
 def tick(timer):
     buzzer.tick(settings.TICK_PERIOD)
     tempsensor.tick()
+    tempsensor_aux.tick()
     fan.tick(settings.TICK_PERIOD)
 
     global operational_counter
@@ -100,6 +102,7 @@ def tick(timer):
     
     if operational_counter == settings.OPERATIONAL_FREQUENCY:
         tempsensor.get_temperature()
+        tempsensor_aux.get_temperature()
         fan_controller.update_fan_speed()
         log_sensors_data()
         operational_counter = 0
@@ -115,6 +118,7 @@ def log_sensors_data():
     data_logger.log_data({
         'time': nowstr,
         'temp': to_log_value(tempsensor.current_temperature),
+        'temp_aux': to_log_value(tempsensor_aux.current_temperature),
         'speed': to_log_value(fan.current_speed),
     })
 

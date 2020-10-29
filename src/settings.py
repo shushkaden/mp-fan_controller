@@ -29,5 +29,6 @@ PINS = {
     'test_toggle': 27,
     'full_throttle_toggle': 26,
     'tempsensor': 32,
+    'tempsensor_aux': 33,
     'buzzer': 10,
 }
