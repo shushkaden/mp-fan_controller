@@ -43,8 +43,7 @@ class PIDFanTempController:
     def update_fan_speed(self):
         self.update_temp_data()
         self.speed = self.get_new_fan_speed()
-        fan_speed = round(self.speed * 1023 / 100)
-        self.pwm_fan.set_speed(fan_speed)
+        self.pwm_fan.set_speed_percent(self.speed)
         self.control_buzzer()
 
     def update_temp_data(self):

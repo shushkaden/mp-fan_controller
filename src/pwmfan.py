@@ -10,6 +10,7 @@ class PWMFan:
     starting_speed = settings.FAN['starting_speed']
     starting_time = settings.FAN['starting_time']
     pwm_frequency = settings.FAN['pwm_frequency']
+    min_fan_speed = settings.FAN['min_fan_speed']
     fan_pin = None
     led_pin = None
     current_speed = 0
@@ -68,6 +69,16 @@ class PWMFan:
         speed = max(speed, 0)
         self.current_speed = speed
         self.fan_pin.duty(speed)
+
+    def set_speed_percent(self, speed):
+        speed = min(speed, 100)
+        speed = max(speed, 0)
+        if speed == 0:
+            return self.set_speed(speed)
+        fan_range = 1023 - self.min_fan_speed
+        speed = self.min_fan_speed + fan_range * speed / 100
+        return self.set_speed(speed)
+
 
     def set_speed(self, speed):
         if not self._can_change_speed:

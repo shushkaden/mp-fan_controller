@@ -8,12 +8,13 @@ DATA_LOGGER = {
 LOGGING_FILE = '/logs/log.log'
 
 FAN = {
-    'min_speed': 10,
-    'turn_on_speed': 13,
-    'turn_off_speed': 7,
-    'starting_speed': 18,
+    'min_speed': 360,
+    'turn_on_speed': 370,
+    'turn_off_speed': 350,
+    'starting_speed': 450,
     'starting_time': 1000,
-    'pwm_frequency': 100,
+    'pwm_frequency': 100000,
+    'min_fan_speed': 350,
 }
 
 TICK_PERIOD = 50  # milliseconds
