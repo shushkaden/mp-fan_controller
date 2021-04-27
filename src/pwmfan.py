@@ -4,13 +4,12 @@ import settings
 
 
 class PWMFan:
-    min_speed = settings.FAN['min_speed']
-    turn_on_speed = settings.FAN['turn_on_speed']
-    turn_off_speed = settings.FAN['turn_off_speed']
-    starting_speed = settings.FAN['starting_speed']
+    turn_on_speed = settings.FAN['turn_on_speed']        # Fan starts if set speed is higher then $turn_on_speed
+    turn_off_speed = settings.FAN['turn_off_speed']      # Fan stops if set speed is lower then $turn_off_speed
+    min_speed = settings.FAN['min_speed']                # Fan rotates with $min_speed even if set speed is lower
+    starting_speed = settings.FAN['starting_speed']      # Fan starts with $starting_speed during $starting_time
     starting_time = settings.FAN['starting_time']
     pwm_frequency = settings.FAN['pwm_frequency']
-    min_fan_speed = settings.FAN['min_fan_speed']
     fan_pin = None
     led_pin = None
     current_speed = 0
@@ -66,7 +65,7 @@ class PWMFan:
 
     def _set_speed(self, speed):
         speed = min(speed, 1023)
-        speed = max(speed, 0)
+        speed = round(max(speed, 0))
         self.current_speed = speed
         self.fan_pin.duty(speed)
 
@@ -75,8 +74,8 @@ class PWMFan:
         speed = max(speed, 0)
         if speed == 0:
             return self.set_speed(speed)
-        fan_range = 1023 - self.min_fan_speed
-        speed = self.min_fan_speed + fan_range * speed / 100
+        fan_range = 1023 - self.min_speed
+        speed = self.min_speed + fan_range * speed / 100
         return self.set_speed(speed)
 
 

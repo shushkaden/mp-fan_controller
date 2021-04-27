@@ -14,8 +14,8 @@ class PIDFanTempController:
     target_temperature = None
     predicted_speed = 10
     proportional_ratio = 15  # percents/degree
-    integral_ratio = 0.2  # percents/(degree*second)
-    derivative_ratio = 30  # percents/(degree/second)
+    integral_ratio = 0.4  # percents/(degree*second)
+    derivative_ratio = 100  # percents/(degree/second)
     derivative_part_delay = 5  # delay in seconds for derivative part
     integral_part_active = False
     speed = 0
