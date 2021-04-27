@@ -31,9 +31,11 @@ basicConfig(filename=settings.LOGGING_FILE, format="{asctime} {message}", style=
 logger = getLogger()
 logger.info('STARTING...')
 buzzer = None
+data_logger = None
 
 
 def log_and_restart(e):
+    print(str(e))
     logger.exc(e, 'ERROR OCCURRED')
     logger.info('RESTARTING...')
     if buzzer is not None:
@@ -59,9 +61,6 @@ try:
     # init time
     RTC().datetime(tuple(now() + [0]))
 
-    # mount sd card
-    uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), settings.SD_CARD_PATH)
-
     # init buzzer
     buzzer = Buzzer(pin=settings.PINS['buzzer'])
 
@@ -77,8 +76,14 @@ try:
     # test
     Toggle(pin=settings.PINS['test_toggle'], action=buzzer.test_on, cancel_action=buzzer.test_off)
 
-    # init data logger
-    data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed'])
+    try:
+        # mount sd card
+        uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), settings.SD_CARD_PATH)
+    except Exception as e:
+        logger.exc(e, 'FLASH CARD ERROR')
+    else:
+        # init data logger
+        data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed'])
 
     # init timer
     main_timer = Timer(-1)
@@ -115,12 +120,13 @@ def log_sensors_data():
         minute=leading_zero(time_now[5]),
         second=leading_zero(time_now[6]))
 
-    data_logger.log_data({
-        'time': nowstr,
-        'temp': to_log_value(tempsensor.current_temperature),
-        'temp_aux': to_log_value(tempsensor_aux.current_temperature),
-        'speed': to_log_value(fan.current_speed),
-    })
+    if data_logger:
+        data_logger.log_data({
+            'time': nowstr,
+            'temp': to_log_value(tempsensor.current_temperature),
+            'temp_aux': to_log_value(tempsensor_aux.current_temperature),
+            'speed': to_log_value(fan.current_speed),
+        })
 
 
 def main():
