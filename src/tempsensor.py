@@ -4,10 +4,9 @@ from smooth import SmoothValue
 
 
 class ADCReader:
-    values = []
-    sensor = None
 
     def __init__(self, pin=32):
+        self.values = []
         self.sensor = ADC(Pin(pin))
         self.sensor.atten(ADC.ATTN_11DB)
 
