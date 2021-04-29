@@ -1,20 +1,21 @@
 from smooth import SmoothValue
 
 class TempsensorMock:
-    fan = None
-    heater_power = 80
-    current_temperature = 60
-
-    current_raw_temperature = 5
-    current_raw_delta = 5
-    current_delta = 5
-
-    length = 80
-    fan_values = []
-    smooth_speed = SmoothValue(0.01, 0.1, 20)
 
     def __init__(self, fan):
         self.fan = fan
+
+        self.fan = None
+        self.heater_power = 80
+        self.current_temperature = 60
+
+        self.current_raw_temperature = 5
+        self.current_raw_delta = 5
+        self.current_delta = 5
+
+        self.length = 80
+        self.fan_values = []
+        self.smooth_speed = SmoothValue(0.01, 0.1, 20)
 
     def tick(self):
         fan_speed = self.fan.current_speed * 100 / 1023

@@ -4,26 +4,26 @@ import settings
 
 
 class PWMFan:
-    turn_on_speed = settings.FAN['turn_on_speed']        # Fan starts if set speed is higher then $turn_on_speed
-    turn_off_speed = settings.FAN['turn_off_speed']      # Fan stops if set speed is lower then $turn_off_speed
-    min_speed = settings.FAN['min_speed']                # Fan rotates with $min_speed even if set speed is lower
-    starting_speed = settings.FAN['starting_speed']      # Fan starts with $starting_speed during $starting_time
-    starting_time = settings.FAN['starting_time']
-    pwm_frequency = settings.FAN['pwm_frequency']
-    fan_pin = None
-    led_pin = None
-    current_speed = 0
-    is_running = False
-    is_starting = False
-    counter = 0
-    full_throttle_mode = False
 
     def __init__(self, pin=12, led_pin=None):
         self.fan_pin = PWM(Pin(pin), self.pwm_frequency)
         self._set_speed(0)
+        self.led_pin = None
         if led_pin:
             self.led_pin = Pin(led_pin, Pin.OUT)
             self.led_pin.value(0)
+
+        self.turn_on_speed = settings.FAN['turn_on_speed']  # Fan starts if set speed is higher then $turn_on_speed
+        self.turn_off_speed = settings.FAN['turn_off_speed']  # Fan stops if set speed is lower then $turn_off_speed
+        self.min_speed = settings.FAN['min_speed']  # Fan rotates with $min_speed even if set speed is lower
+        self.starting_speed = settings.FAN['starting_speed']  # Fan starts with $starting_speed during $starting_time
+        self.starting_time = settings.FAN['starting_time']
+        self.pwm_frequency = settings.FAN['pwm_frequency']
+        self.current_speed = 0
+        self.is_running = False
+        self.is_starting = False
+        self.counter = 0
+        self.full_throttle_mode = False
 
     def _start(self):
         self.is_running = True

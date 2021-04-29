@@ -4,35 +4,29 @@ from smooth import SmoothValue
 
 
 class PIDFanTempController:
-    pwm_fan = None
-    temp_sensor = None
-    buzzer = None
-
-    proportional_part = 0
-    integral_part = 0
-    derivative_part = 0
-    target_temperature = None
-    predicted_speed = 10
-    proportional_ratio = 15  # percents/degree
-    integral_ratio = 0.4  # percents/(degree*second)
-    derivative_ratio = 100  # percents/(degree/second)
-    derivative_part_delay = 5  # delay in seconds for derivative part
-    integral_part_active = False
-    speed = 0
-    max_integration_part = 105
-    min_integration_part = -30
-    buzzer_alarm_temp = 5
-
-    smooth_delta = SmoothValue(0.1, 1, 1)
-    smooth_derivative_delta = SmoothValue(0.1, 1, 1)
-
-    temp_values = []
 
     def __init__(self, pwm_fan, temp_sensor, buzzer, target_temperature):
         self.pwm_fan = pwm_fan
         self.temp_sensor = temp_sensor
         self.target_temperature = target_temperature
         self.buzzer = buzzer
+        self.proportional_part = 0
+        self.integral_part = 0
+        self.derivative_part = 0
+        self.target_temperature = None
+        self.predicted_speed = 10
+        self.proportional_ratio = 15  # percents/degree
+        self.integral_ratio = 0.25  # percents/(degree*second)
+        self.derivative_ratio = 40  # percents/(degree/second)
+        self.derivative_part_delay = 5  # delay in seconds for derivative part
+        self.integral_part_active = False
+        self.speed = 0
+        self.max_integration_part = 105
+        self.min_integration_part = -30
+        self.buzzer_alarm_temp = 5
+        self.smooth_delta = SmoothValue(0.1, 1, 1)
+        self.smooth_derivative_delta = SmoothValue(0.1, 1, 1)
+        self.temp_values = []
 
     def control_buzzer(self):
         if self.temp_sensor.current_temperature > self.target_temperature + self.buzzer_alarm_temp + 0.5:
@@ -90,16 +84,13 @@ class PWMFanMock:
 
 
 class PIDFan2TempController:
-    pid1 = None
-    pid2 = None
-    pwm_fan = None
-    speed = 0
-    active_sensor = 1
 
     def __init__(self, pwm_fan, temp_sensor1, temp_sensor2, target1, target2):
         self.pid1 = PIDFanTempController(PWMFanMock(), temp_sensor1, target1)
         self.pid2 = PIDFanTempController(PWMFanMock(), temp_sensor2, target2)
         self.pwm_fan = pwm_fan
+        self.speed = 0
+        self.active_sensor = 1
 
     def update_fan_speed(self):
         self.pid1.update_temp_data()

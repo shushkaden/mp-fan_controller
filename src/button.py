@@ -2,14 +2,12 @@ from machine import Pin
 
 
 class Button:
-    pin = None
-    value = 0
-    action = None
 
     def __init__(self, pin, action):
         self.action = action
         self.pin = Pin(pin, Pin.IN)
         self.pin.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.callback)
+        self.value = 0
 
     def callback(self, _):
         new_value = self.pin.value()
@@ -32,16 +30,13 @@ Button(button_pin, print_message)
 
 
 class Toggle:
-    pin = None
-    value = 0
-    action = None
-    cancel_action = None
 
     def __init__(self, pin, action, cancel_action):
         self.action = action
         self.cancel_action = cancel_action
         self.pin = Pin(pin, Pin.IN)
         self.pin.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.callback)
+        self.value = 0
 
     def callback(self, _):
         new_value = self.pin.value()

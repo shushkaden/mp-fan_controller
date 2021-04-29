@@ -9,63 +9,55 @@ class ADCReader:
         self.values = []
         self.sensor = ADC(Pin(pin))
         self.sensor.atten(ADC.ATTN_11DB)
+        self.values_range = 40
+        self.edge = round(self.values_range * 0.2)
 
     def read(self):
         value = self.sensor.read()
         self.values.append(value)
-        while len(self.values) > 10:
+        while len(self.values) > self.values_range:
             self.values.pop(0)
 
         return value
 
     def get_value(self):
-        if not self.values:
+        if len(self.values) < self.values_range:
             return self.read()
 
-        max_value = max(self.values)
-        min_value = min(self.values)
-        max_values = []
-        min_values = []
-
-        for value in self.values:
-            if (max_value - value) < (value - min_value):
-                max_values.append(value)
-            else:
-                min_values.append(value)
-
-        good_values = max_values if len(max_values) > len(min_values) else min_values
-        value = sum(good_values)/len(good_values)
+        values = sorted(self.values.copy())
+        values = values[self.edge:len(values)-self.edge]
+        value = sum(values) / len(values)
 
         return int(value)
 
 
 class Tempsensor:
-    adc_reader = None
-    values = []
-    range = 6  # seconds +1
-    smooth_raw_temperature = SmoothValue(0.05, 1, 2)
-    smooth_temperature = SmoothValue(0.05, 1, 2)
-    smooth_delta = SmoothValue(0.1, 1, 1)
-    # parameters for formula
-    # y = ax ^ 3 + bx ^ 2 + cx + d
-    # where x is adc value and y is temperature
-    # several ranges for a higher precision
-    # VALUES WORKS ONLY FOR 266 OHMS RESISTOR IN VOLTAGE DEVIDER!
-    # AND TEMPERATURE SENSOR FAE 33060
-    adc_temperature_dependancy = [
-        {'value': 765, 'a': 0.0000000041, 'b': -0.0000169431, 'c': 0.05483747, 'd': 23.3167608512},
-        {'value': 0, 'a': 0.0000000682, 'b': -0.0001242755, 'c': 0.1168440757, 'd': 9.9987971976},
-    ]
 
-    current_adc_temperature = 0
-    current_raw_temperature = 0
-    current_temperature = 0
-    current_raw_delta = 0
-    current_delta = 0
-    adc_value = 0
-
-    def __init__(self, pin=32):
+    def __init__(self, pin):
         self.adc_reader = ADCReader(pin=pin)
+
+        self.values = []
+        self.range = 6  # seconds +1
+        self.smooth_raw_temperature = SmoothValue(0.05, 1, 2)
+        self.smooth_temperature = SmoothValue(0.05, 1, 2)
+        self.smooth_delta = SmoothValue(0.1, 1, 1)
+        # parameters for formula
+        # y = ax ^ 3 + bx ^ 2 + cx + d
+        # where x is adc value and y is temperature
+        # several ranges for a higher precision
+        # VALUES WORKS ONLY FOR 266 OHMS RESISTOR IN VOLTAGE DEVIDER!
+        # AND TEMPERATURE SENSOR FAE 33060
+        self.adc_temperature_dependancy = [
+            {'value': 765, 'a': 0.0000000041, 'b': -0.0000169431, 'c': 0.05483747, 'd': 23.3167608512},
+            {'value': 0, 'a': 0.0000000682, 'b': -0.0001242755, 'c': 0.1168440757, 'd': 9.9987971976},
+        ]
+
+        self.current_adc_temperature = 0
+        self.current_raw_temperature = 0
+        self.current_temperature = 0
+        self.current_raw_delta = 0
+        self.current_delta = 0
+        self.adc_value = 0
 
     def tick(self):
         self.adc_reader.read()

@@ -21,14 +21,14 @@ OPERATIONAL_PERIOD = 1000  # milliseconds
 
 OPERATIONAL_FREQUENCY = int(OPERATIONAL_PERIOD/TICK_PERIOD)
 
-TARGET_TEMPERATURE = 70
+TARGET_TEMPERATURE = 80
 
 PINS = {
     'fan': 12,
     'fan_led': 13,
     'test_toggle': 27,
     'full_throttle_toggle': 26,
-    'tempsensor': 32,
-    'tempsensor_aux': 33,
+    'tempsensor': 33,
+    'tempsensor_aux': 32,
     'buzzer': 10,
 }

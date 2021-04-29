@@ -83,7 +83,7 @@ try:
         logger.exc(e, 'FLASH CARD ERROR')
     else:
         # init data logger
-        data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed'])
+        data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed', 'adc', 'adc_value', 'adc_aux', 'adc_value_aux'])
 
     # init timer
     main_timer = Timer(-1)
@@ -126,6 +126,10 @@ def log_sensors_data():
             'temp': to_log_value(tempsensor.current_temperature),
             'temp_aux': to_log_value(tempsensor_aux.current_temperature),
             'speed': to_log_value(fan.current_speed),
+            'adc': to_log_value(tempsensor.adc_reader.sensor.read()),
+            'adc_aux': to_log_value(tempsensor_aux.adc_reader.sensor.read()),
+            'adc_value': to_log_value(tempsensor.adc_reader.get_value()),
+            'adc_value_aux': to_log_value(tempsensor_aux.adc_reader.get_value()),
         })
 
 

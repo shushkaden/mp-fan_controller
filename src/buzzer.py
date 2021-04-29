@@ -3,18 +3,17 @@ from machine import Pin
 
 
 class Buzzer:
-    pin = None
-    active = False
-    timer = 0
-    turn_on_pattern = [0.25]
-    error_pattern = [1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
-    alarm_pattern = [0.8, 0.8]
-    test_pattern = [0.15, 0.15]
-    repeat_pattern = None
-    repeat_index = 0
 
-    def __init__(self, pin=10):
+    def __init__(self, pin):
         self.pin = Pin(pin, Pin.OUT)
+        self.active = False
+        self.timer = 0
+        self.turn_on_pattern = [0.25]
+        self.error_pattern = [1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+        self.alarm_pattern = [0.8, 0.8]
+        self.test_pattern = [0.15, 0.15]
+        self.repeat_pattern = None
+        self.repeat_index = 0
 
     def turn_on(self):
         if not self.active:

@@ -6,11 +6,12 @@ from timemodule import now
 
 
 class CSVDataLogger:
-    filename = None
-    delimiter = ';'
-    headers = None
 
     def __init__(self, headers):
+        self.filename = None
+        self.delimiter = ';'
+        self.headers = None
+
         log_path = settings.SD_CARD_PATH if settings.DATA_LOGGER['use_sd'] else ''
         log_dir = settings.DATA_LOGGER['dir']
 

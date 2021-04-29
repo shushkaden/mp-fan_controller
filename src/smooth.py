@@ -1,13 +1,10 @@
 class SmoothValue:
-    value = None
-    min_value = None
-    max_value = None
-    divider = None
 
     def __init__(self, min_value, max_value, divider):
         self.min_value = min_value
         self.max_value = max_value
         self.divider = divider
+        self.value = None
 
     def get_smooth(self, value):
         if not self.value:
