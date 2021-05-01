@@ -80,6 +80,7 @@ try:
         # mount sd card
         uos.mount(SDCard(slot=2, sck=18, miso=19, mosi=23, cs=5), settings.SD_CARD_PATH)
     except Exception as e:
+        buzzer.play_error2_signal()
         logger.exc(e, 'FLASH CARD ERROR')
     else:
         # init data logger
@@ -131,6 +132,19 @@ def log_sensors_data():
             'adc_value': to_log_value(tempsensor.adc_reader.get_value()),
             'adc_value_aux': to_log_value(tempsensor_aux.adc_reader.get_value()),
         })
+
+    data_str = 'time {time}; temp {temp}; adc {adc}; adc2 {adc2}; aux_temp {aux_temp}; aux_adc {aux_adc}; aux_adc2 {aux_adc2}; speed {speed}'.format(
+        time=nowstr,
+        temp=to_log_value(tempsensor.current_temperature),
+        adc=to_log_value(tempsensor.adc_reader.sensor.read()),
+        adc2=to_log_value(tempsensor.adc_reader.get_value()),
+        aux_temp=to_log_value(tempsensor_aux.current_temperature),
+        aux_adc=to_log_value(tempsensor_aux.adc_reader.sensor.read()),
+        aux_adc2=to_log_value(tempsensor_aux.adc_reader.get_value()),
+        speed=to_log_value(fan.current_speed),
+    )
+
+    print(data_str)
 
 
 def main():

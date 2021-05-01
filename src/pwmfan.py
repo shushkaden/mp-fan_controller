@@ -6,8 +6,6 @@ import settings
 class PWMFan:
 
     def __init__(self, pin=12, led_pin=None):
-        self.fan_pin = PWM(Pin(pin), self.pwm_frequency)
-        self._set_speed(0)
         self.led_pin = None
         if led_pin:
             self.led_pin = Pin(led_pin, Pin.OUT)
@@ -24,6 +22,9 @@ class PWMFan:
         self.is_starting = False
         self.counter = 0
         self.full_throttle_mode = False
+
+        self.fan_pin = PWM(Pin(pin), self.pwm_frequency)
+        self._set_speed(0)
 
     def _start(self):
         self.is_running = True

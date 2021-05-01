@@ -5,7 +5,7 @@ DATA_LOGGER = {
     'use_sd': True,
 }
 
-LOGGING_FILE = '/logs/log.log'
+LOGGING_FILE = '/logs/log.txt'
 
 FAN = {
     'turn_on_speed': 90,
