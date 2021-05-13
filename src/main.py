@@ -84,7 +84,7 @@ try:
         logger.exc(e, 'FLASH CARD ERROR')
     else:
         # init data logger
-        data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed', 'adc', 'adc_value', 'adc_aux', 'adc_value_aux'])
+        data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed', 'temp_adc', 'temp_raw', 'temp_adc_aux', 'temp_raw_aux'])
 
     # init timer
     main_timer = Timer(-1)
@@ -127,21 +127,23 @@ def log_sensors_data():
             'temp': to_log_value(tempsensor.current_temperature),
             'temp_aux': to_log_value(tempsensor_aux.current_temperature),
             'speed': to_log_value(fan.current_speed),
-            'adc': to_log_value(tempsensor.adc_reader.sensor.read()),
-            'adc_aux': to_log_value(tempsensor_aux.adc_reader.sensor.read()),
-            'adc_value': to_log_value(tempsensor.adc_reader.get_value()),
-            'adc_value_aux': to_log_value(tempsensor_aux.adc_reader.get_value()),
+            'temp_adc': to_log_value(tempsensor.current_adc_temperature),
+            'temp_adc_aux': to_log_value(tempsensor_aux.current_adc_temperature),
+            'temp_raw': to_log_value(tempsensor.current_raw_temperature),
+            'temp_raw_aux': to_log_value(tempsensor_aux.current_raw_temperature),
         })
 
-    data_str = 'time {time}; temp {temp}; adc {adc}; adc2 {adc2}; aux_temp {aux_temp}; aux_adc {aux_adc}; aux_adc2 {aux_adc2}; speed {speed}'.format(
+    data_str = 'time {time}; speed {speed}; ' \
+               'temp {temp}; temp_adc {temp_adc}; temp_raw {temp_raw}; ' \
+               'aux_temp {aux_temp}; aux_temp_adc {aux_temp_adc}; aux_temp_raw {aux_temp_raw}'.format(
         time=nowstr,
-        temp=to_log_value(tempsensor.current_temperature),
-        adc=to_log_value(tempsensor.adc_reader.sensor.read()),
-        adc2=to_log_value(tempsensor.adc_reader.get_value()),
-        aux_temp=to_log_value(tempsensor_aux.current_temperature),
-        aux_adc=to_log_value(tempsensor_aux.adc_reader.sensor.read()),
-        aux_adc2=to_log_value(tempsensor_aux.adc_reader.get_value()),
         speed=to_log_value(fan.current_speed),
+        temp=to_log_value(tempsensor.current_temperature),
+        temp_adc=to_log_value(tempsensor.current_adc_temperature),
+        temp_raw=to_log_value(tempsensor.current_raw_temperature),
+        aux_temp=to_log_value(tempsensor_aux.current_temperature),
+        aux_temp_adc=to_log_value(tempsensor_aux.current_adc_temperature),
+        aux_temp_raw=to_log_value(tempsensor_aux.current_raw_temperature),
     )
 
     print(data_str)
