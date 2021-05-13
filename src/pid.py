@@ -13,15 +13,25 @@ class PIDFanTempController:
         self.proportional_part = 0
         self.integral_part = 0
         self.derivative_part = 0
-        self.predicted_speed = 10
-        self.proportional_ratio = 25  # percents/degree
-        self.integral_ratio = 0.4  # percents/(degree*second)
-        self.derivative_ratio = 40  # percents/(degree/second)
+
+        # Cohen-Coon params
+        self.gp = 0.1  # gain
+        self.td = 10  # dead time
+        self.tau = 30  # time constant
+
+        self.gain_tuning = 1
+
+        self.gain = self.gain_tuning * 1.35 / self.gp * (0.185 + self.tau / self.td)
+        self.integral_time = 2.5 * self.td * (self.tau + 0.185 * self.td) / (self.tau + 0.611 * self.td)
+        self.integral_ratio = self.gain / self.integral_time
+        self.derivative_time = 0.37 * self.td * self.tau / (self.tau + 0.185 * self.td)
+        self.derivative_ratio = self.gain * self.derivative_time
+
         self.derivative_part_delay = 5  # delay in seconds for derivative part
         self.integral_part_active = False
         self.speed = 0
-        self.max_integration_part = 105
-        self.min_integration_part = -5
+        self.max_integration_part = 100
+        self.min_integration_part = 0
         self.buzzer_alarm_temp = 5
         self.smooth_delta = SmoothValue(0.1, 1, 1)
         self.smooth_derivative_delta = SmoothValue(0.1, 1, 1)
@@ -54,7 +64,7 @@ class PIDFanTempController:
         current_delta = self.smooth_delta.get_smooth(self.temp_values[-1]['temperature'] - self.target_temperature)
 
         # proportional part
-        self.proportional_part = self.proportional_ratio * current_delta + self.predicted_speed
+        self.proportional_part = self.gain * current_delta
 
         # integral part
         if self.integral_part_active and len(self.temp_values) >= 2:
