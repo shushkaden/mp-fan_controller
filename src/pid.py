@@ -15,9 +15,9 @@ class PIDFanTempController:
         self.derivative_part = 0
 
         # Cohen-Coon params
-        self.gp = 0.1  # gain
-        self.td = 10  # dead time
-        self.tau = 30  # time constant
+        self.gp = 0.26  # gain
+        self.td = 28  # dead time
+        self.tau = 123  # time constant
 
         self.gain_tuning = 1
 
