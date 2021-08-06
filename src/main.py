@@ -84,7 +84,7 @@ try:
         logger.exc(e, 'FLASH CARD ERROR')
     else:
         # init data logger
-        data_logger = CSVDataLogger(['time', 'temp', 'temp_aux', 'speed', 'temp_adc', 'temp_raw', 'temp_adc_aux', 'temp_raw_aux'])
+        data_logger = CSVDataLogger(['time', 'speed', 'temp', 'temp_aux'])
 
     # init timer
     main_timer = Timer(-1)
@@ -124,26 +124,17 @@ def log_sensors_data():
     if data_logger:
         data_logger.log_data({
             'time': nowstr,
+            'speed': to_log_value(fan.current_percent_speed),
             'temp': to_log_value(tempsensor.current_temperature),
             'temp_aux': to_log_value(tempsensor_aux.current_temperature),
-            'speed': to_log_value(fan.current_speed),
-            'temp_adc': to_log_value(tempsensor.current_adc_temperature),
-            'temp_adc_aux': to_log_value(tempsensor_aux.current_adc_temperature),
-            'temp_raw': to_log_value(tempsensor.current_raw_temperature),
-            'temp_raw_aux': to_log_value(tempsensor_aux.current_raw_temperature),
         })
 
-    data_str = 'time {time}; speed {speed}; ' \
-               'temp {temp}; temp_adc {temp_adc}; temp_raw {temp_raw}; ' \
-               'aux_temp {aux_temp}; aux_temp_adc {aux_temp_adc}; aux_temp_raw {aux_temp_raw}'.format(
+    data_str = 'time {time}; speed {speed}; speed_value {speed_value}; temp {temp}; temp_aux {temp_aux}'.format(
         time=nowstr,
-        speed=to_log_value(fan.current_speed),
+        speed=to_log_value(fan.current_percent_speed),
+        speed_value=to_log_value(fan.current_speed),
         temp=to_log_value(tempsensor.current_temperature),
-        temp_adc=to_log_value(tempsensor.current_adc_temperature),
-        temp_raw=to_log_value(tempsensor.current_raw_temperature),
-        aux_temp=to_log_value(tempsensor_aux.current_temperature),
-        aux_temp_adc=to_log_value(tempsensor_aux.current_adc_temperature),
-        aux_temp_raw=to_log_value(tempsensor_aux.current_raw_temperature),
+        temp_aux=to_log_value(tempsensor_aux.current_temperature),
     )
 
     print(data_str)

@@ -18,6 +18,7 @@ class PWMFan:
         self.starting_time = settings.FAN['starting_time']
         self.pwm_frequency = settings.FAN['pwm_frequency']
         self.current_speed = 0
+        self.current_percent_speed = 0
         self.is_running = False
         self.is_starting = False
         self.counter = 0
@@ -64,6 +65,9 @@ class PWMFan:
     def _can_change_speed(self):
         return not self.is_starting and not self.full_throttle_mode
 
+    def convert_pressure_to_power(self, speed):
+        return pow(speed, 1.5)/10
+
     def _set_speed(self, speed):
         speed = min(speed, 1023)
         speed = round(max(speed, 0))
@@ -73,12 +77,15 @@ class PWMFan:
     def set_speed_percent(self, speed):
         speed = min(speed, 100)
         speed = max(speed, 0)
+        self.current_percent_speed = speed
+
         if speed == 0:
             return self.set_speed(speed)
+
+        speed = self.convert_pressure_to_power(speed)
         fan_range = 1023 - self.min_speed
         speed = self.min_speed + fan_range * speed / 100
         return self.set_speed(speed)
-
 
     def set_speed(self, speed):
         if not self._can_change_speed:
