@@ -19,13 +19,14 @@ class PIDFanTempController:
         self.td = 28  # dead time
         self.tau = 123  # time constant
 
-        self.gain_tuning = 1
+        self.gain_tuning = 0.5
+        self.derivative_tuning = 4
 
         self.gain = self.gain_tuning * 1.35 / self.gp * (0.185 + self.tau / self.td)
         self.integral_time = 2.5 * self.td * (self.tau + 0.185 * self.td) / (self.tau + 0.611 * self.td)
         self.integral_ratio = self.gain / self.integral_time
         self.derivative_time = 0.37 * self.td * self.tau / (self.tau + 0.185 * self.td)
-        self.derivative_ratio = self.gain * self.derivative_time
+        self.derivative_ratio = self.derivative_tuning * self.gain * self.derivative_time
 
         self.derivative_part_delay = 5  # delay in seconds for derivative part
         self.integral_part_active = False
